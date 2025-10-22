@@ -1,3 +1,5 @@
+import { M1VChart } from "@/components/m1v-chart";
+
 export default function WhitepaperPage() {
   return (
     <div className="min-h-screen pt-24 pb-20">
@@ -62,12 +64,18 @@ export default function WhitepaperPage() {
           </section>
 
           {/* The Philosophy */}
-          <section className="space-y-4">
+          <section className="space-y-6">
             <h2 className="text-3xl font-sentient">The Philosophy</h2>
             <div className="font-mono text-sm md:text-base text-foreground/80 leading-relaxed space-y-4">
               <p>
                 The economy is splitting in two. It's working for the wealthy but not for most people. The government is continuously printing money and boosting asset prices such as stocks and real estate. This helps the rich but makes life expensive for everyone else. Housing, healthcare, and basics are harder to afford. People are spending less, and money isn't moving through the economy like it should relative to the amount that's out there. The biggest indicator this is happening is the Velocity of M1 Money Stock - the amount of times the liquid money supply exchanges hands each year. Before the Great Recession, money used to exchange hands over 10 times per year and now that has plummeted to just 1.6 times.
               </p>
+            </div>
+
+            {/* M1V Chart */}
+            <M1VChart />
+
+            <div className="font-mono text-sm md:text-base text-foreground/80 leading-relaxed space-y-4">
               <p>
                 Our rewards app and token aims to fix this. We want to bring everyone into decentralized finance and make them into asset owners so that no one is left behind. By earning tokens through receipt uploads, users can join DeFi, trade, and grow their wealth without having to risk their hard earned money. We also want to make spending fun again. You earn tokens only by spending and uploading receipts, which encourages people to spend more in their local community. This boosts the economy, empowers users, and creates a fairer system where everyone can build wealth.
               </p>
