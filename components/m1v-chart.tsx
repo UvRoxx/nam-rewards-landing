@@ -58,33 +58,32 @@ export function M1VChart() {
             data={m1vData}
             margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#444444" opacity={0.3} />
             <XAxis
               dataKey="date"
-              stroke="currentColor"
-              opacity={0.6}
-              style={{ fontSize: '12px' }}
+              stroke="#888888"
+              style={{ fontSize: '12px', fill: '#888888' }}
               angle={-45}
               textAnchor="end"
               height={80}
             />
             <YAxis
-              stroke="currentColor"
-              opacity={0.6}
-              style={{ fontSize: '12px' }}
+              stroke="#888888"
+              style={{ fontSize: '12px', fill: '#888888' }}
               label={{
                 value: 'Velocity (times per year)',
                 angle: -90,
                 position: 'insideLeft',
-                style: { textAnchor: 'middle', fontSize: '12px', fill: 'currentColor', opacity: 0.6 }
+                style: { textAnchor: 'middle', fontSize: '12px', fill: '#888888' }
               }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                border: '1px solid #DAFF00',
                 borderRadius: '4px',
                 fontSize: '12px',
+                color: '#ffffff',
               }}
               formatter={(value: number) => [`${value.toFixed(2)}x`, 'Velocity']}
               labelFormatter={(label) => `Year: ${label}`}
@@ -149,10 +148,10 @@ export function M1VChart() {
             <Line
               type="monotone"
               dataKey="velocity"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
+              stroke="#DAFF00"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 6 }}
+              activeDot={{ r: 8, fill: "#DAFF00", stroke: "#DAFF00" }}
             />
           </LineChart>
         </ResponsiveContainer>
