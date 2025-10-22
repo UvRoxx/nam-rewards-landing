@@ -12,19 +12,47 @@ interface EmailModalProps {
 export function EmailModal({ isOpen, onClose, platform }: EmailModalProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Add email collection logic here (e.g., send to API)
-    console.log(`Email submitted for ${platform}:`, email);
-    setSubmitted(true);
-    setTimeout(() => {
-      setEmail("");
-      setSubmitted(false);
-      onClose();
-    }, 2000);
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          platform,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitted(true);
+        setTimeout(() => {
+          setEmail("");
+          setSubmitted(false);
+          setError("");
+          onClose();
+        }, 2000);
+      } else {
+        setError(data.error || "Failed to submit. Please try again.");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+      console.error("Error submitting lead:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -64,14 +92,19 @@ export function EmailModal({ isOpen, onClose, platform }: EmailModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-foreground/40"
+                disabled={isSubmitting}
+                className="w-full px-4 py-3 bg-foreground/5 border border-foreground/10 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
+            {error && (
+              <p className="text-red-500 text-sm font-mono">{error}</p>
+            )}
             <button
               type="submit"
-              className="w-full bg-primary text-black font-mono font-semibold py-3 rounded-md hover:bg-primary/90 transition-colors"
+              disabled={isSubmitting}
+              className="w-full bg-primary text-black font-mono font-semibold py-3 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Notify Me
+              {isSubmitting ? "Submitting..." : "Notify Me"}
             </button>
           </form>
         ) : (
