@@ -1,4 +1,4 @@
-import { put, list, head } from '@vercel/blob';
+import { put, list, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
 // Use Node.js runtime instead of edge for better Vercel Blob compatibility
@@ -97,13 +97,26 @@ export async function POST(request: Request) {
     existingLeads.push(newLead);
     console.log(`Storing ${existingLeads.length} total leads`);
 
-    // Store updated leads back to Vercel Blob
+    // Delete old leads.json file if it exists, then create new one
     try {
+      // Try to delete existing file
+      try {
+        const { blobs } = await list({ token: blobToken });
+        const existingBlob = blobs.find((blob) => blob.pathname === 'leads.json');
+        if (existingBlob) {
+          await del(existingBlob.url, { token: blobToken });
+          console.log('Deleted old leads.json file');
+        }
+      } catch (delError) {
+        // Ignore deletion errors - file might not exist
+        console.log('No old file to delete or deletion failed:', delError);
+      }
+
+      // Create new file
       const blob = await put('leads.json', JSON.stringify(existingLeads, null, 2), {
         access: 'public',
         token: blobToken,
         contentType: 'application/json',
-        addRandomSuffix: false, // Don't add random suffix, replace the file
       });
 
       console.log(`Successfully stored lead. Blob URL: ${blob.url}`);
