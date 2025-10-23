@@ -66,39 +66,62 @@ export async function POST(request: Request) {
 
       if (leadsBlob) {
         // Fetch the existing leads file
-        const response = await fetch(leadsBlob.url);
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data)) {
-            existingLeads = data;
+        try {
+          const response = await fetch(leadsBlob.url);
+          if (response.ok) {
+            const text = await response.text();
+            if (text && text.trim().length > 0) {
+              const data = JSON.parse(text);
+              if (Array.isArray(data)) {
+                existingLeads = data;
+                console.log(`Found ${existingLeads.length} existing leads`);
+              }
+            }
+          } else {
+            console.error(`Failed to fetch leads: ${response.status} ${response.statusText}`);
           }
+        } catch (fetchError) {
+          console.error('Error fetching/parsing leads:', fetchError);
+          // Continue with empty array
         }
+      } else {
+        console.log('No existing leads.json found, starting fresh');
       }
     } catch (error) {
-      // If file doesn't exist or error fetching, start with empty array
-      console.log('No existing leads file found, creating new one');
+      console.error('Error listing blobs:', error);
+      // Continue with empty array
     }
 
     // Add new lead to existing leads
     existingLeads.push(newLead);
+    console.log(`Storing ${existingLeads.length} total leads`);
 
     // Store updated leads back to Vercel Blob
-    const blob = await put('leads.json', JSON.stringify(existingLeads, null, 2), {
-      access: 'public',
-      token: blobToken,
-      contentType: 'application/json',
-    });
+    try {
+      const blob = await put('leads.json', JSON.stringify(existingLeads, null, 2), {
+        access: 'public',
+        token: blobToken,
+        contentType: 'application/json',
+        addRandomSuffix: false, // Don't add random suffix, replace the file
+      });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Lead stored successfully',
-      blobUrl: blob.url,
-      totalLeads: existingLeads.length,
-    });
+      console.log(`Successfully stored lead. Blob URL: ${blob.url}`);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Lead stored successfully',
+        blobUrl: blob.url,
+        totalLeads: existingLeads.length,
+      });
+    } catch (putError) {
+      console.error('Error during put operation:', putError);
+      throw putError;
+    }
   } catch (error) {
     console.error('Error storing lead:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to store lead' },
+      { error: 'Failed to store lead', details: errorMessage },
       { status: 500 }
     );
   }
@@ -125,14 +148,23 @@ export async function GET(request: Request) {
 
       if (leadsBlob) {
         // Fetch the leads file
-        const response = await fetch(leadsBlob.url);
-        if (response.ok) {
-          const leads = await response.json();
-          return NextResponse.json({
-            success: true,
-            leads: Array.isArray(leads) ? leads : [],
-            count: Array.isArray(leads) ? leads.length : 0,
-          });
+        try {
+          const response = await fetch(leadsBlob.url);
+          if (response.ok) {
+            const text = await response.text();
+            if (text && text.trim().length > 0) {
+              const leads = JSON.parse(text);
+              if (Array.isArray(leads)) {
+                return NextResponse.json({
+                  success: true,
+                  leads,
+                  count: leads.length,
+                });
+              }
+            }
+          }
+        } catch (fetchError) {
+          console.error('Error fetching/parsing leads in GET:', fetchError);
         }
       }
 
@@ -142,6 +174,7 @@ export async function GET(request: Request) {
         count: 0,
       });
     } catch (error) {
+      console.error('Error listing blobs in GET:', error);
       return NextResponse.json({
         success: true,
         leads: [],
