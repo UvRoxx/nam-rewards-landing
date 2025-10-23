@@ -1,7 +1,8 @@
-import { put, list } from '@vercel/blob';
+import { put, list, head } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+// Use Node.js runtime instead of edge for better Vercel Blob compatibility
+export const runtime = 'nodejs';
 
 interface Lead {
   email: string;
